@@ -108,18 +108,24 @@
             background-color: #c9302c;
         }
 
+        /* כאן השינוי: הסל קניות תמיד נראה, בצד ימין, לגובה מלא */
         #order-section {
             flex: 1;
-            display: none;
             position: sticky;
             top: 20px;
+            height: calc(100vh - 40px); /* גובה המסך פחות הפדינג */
+            overflow-y: auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         #summary {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            /* יישור תצוגה למעלה */
         }
 
         #summary h3 {
@@ -131,6 +137,8 @@
             list-style: none;
             padding: 0;
             margin: 0 0 10px 0;
+            max-height: 60vh;
+            overflow-y: auto;
         }
 
         #summary li {
@@ -146,7 +154,7 @@
         }
 
         #pay-btn {
-            display: block;
+            display: none; /* יופיע רק כשיש פריטים */
             width: 100%;
             margin-top: 20px;
             padding: 10px;
@@ -174,6 +182,9 @@
             #order-section {
                 position: static;
                 width: 100%;
+                height: auto;
+                overflow-y: visible;
+                margin-top: 20px;
             }
         }
 
@@ -237,17 +248,15 @@
                 }
             });
 
-            const section = document.getElementById("order-section");
             const orderList = document.getElementById("order-list");
             const totalDisplay = document.getElementById("total");
+            const payBtn = document.getElementById("pay-btn");
 
-            if (summaryItems.length > 0) {
-                section.style.display = "block";
-                orderList.innerHTML = summaryItems.join("");
-                totalDisplay.textContent = `סה"כ לתשלום: ${total} ₪`;
-            } else {
-                section.style.display = "none";
-            }
+            orderList.innerHTML = summaryItems.length > 0 ? summaryItems.join("") : "<li>הסל ריק</li>";
+            totalDisplay.textContent = summaryItems.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
+
+            // הצגת כפתור תשלום רק אם יש פריטים
+            payBtn.style.display = summaryItems.length > 0 ? "block" : "none";
         }
 
         fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?sort[0][field]=קוד מוצר&sort[0][direction]=asc`, {
@@ -294,32 +303,33 @@
                         ${details ? `<p style="margin: 8px 0; color: #666; font-size: 0.95rem;">${details}</p>` : ''}
                         <div class="quantity">${quantity === 0 ? "אזל מהמלאי" : `נותרו: ${quantity}`}</div>
                         <div class="price">מחיר: ${price} ₪</div>
-                        <label>בחר כמות להזמנה:
-                            <input type="number" min="0" max="${quantity}" value="${quantity === 0 ? 0 : savedQuantity}" step="1" ${quantity === 0 ? "disabled" : ""} />
+                        <label>בחר כמות:
+                            <input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" />
                         </label>
                     `;
 
                     div.innerHTML = html;
                     grid.appendChild(div);
-
-                    const input = div.querySelector("input");
-                    if (quantity > 0) {
-                        input.addEventListener("change", () => {
-                            localStorage.setItem(`order-${code}`, input.value);
-                            updateOrderSummary(data.records);
-                        });
-                    }
                 });
 
                 categoryDiv.appendChild(grid);
                 container.appendChild(categoryDiv);
             });
 
+            // מאזין לשינוי בכמויות
+            container.querySelectorAll("input[type=number]").forEach(input => {
+                input.addEventListener("change", e => {
+                    let val = parseInt(e.target.value);
+                    const max = parseInt(e.target.getAttribute("data-max"));
+                    if (isNaN(val) || val < 0) val = 0;
+                    if (val > max) val = max;
+                    e.target.value = val;
+                    localStorage.setItem(`order-${e.target.getAttribute("data-code")}`, val);
+                    updateOrderSummary(data.records);
+                });
+            });
+
             updateOrderSummary(data.records);
-        })
-        .catch(err => {
-            document.getElementById("products").innerText = "שגיאה בטעינת הנתונים.";
-            console.error(err);
         });
     </script>
 </body>
