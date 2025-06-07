@@ -342,12 +342,8 @@
                         ${quantity === 0 ? "אזל מהמלאי" : `נותרו: ${quantity}`}</div>
                         <div class="price">מחיר: ${price} ₪</div>
                         <label>בחר כמות:
-                            <input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" />
-                        </label>
-                        <label>בחר כמות:<input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" 
-                        ${quantity === 0 ? 'disabled' : ''}/>
-                        </label>
-
+                            <input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" 
+                        ${quantity === 0 ? 'disabled' : ''}/></label>
                     `;
 
                     div.innerHTML = html;
