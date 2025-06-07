@@ -254,16 +254,26 @@
             location.reload();
         }
 
-
         async function goToPayment() {
-  const cartItems = JSON.parse(localStorage.getItem("order-list") || "[]");
+  // אסוף את כל פריטים מה-localStorage שמתחילים ב-"order-"
+  const cartItems = [];
+
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith("order-")) {
+      const quantity = Number(localStorage.getItem(key));
+      if (quantity > 0) {
+        const code = key.substring(6); // מחזיר את מה אחרי "order-"
+        cartItems.push({ code, quantity });
+      }
+    }
+  });
 
   if (cartItems.length === 0) {
     alert("הסל ריק");
     return;
   }
 
-  const webhookUrl = "https://hook.eu2.make.com/2m7seuz16v7d2hz5rkurvek71co4kyxk"; // ← לכאן תדביקי את הקישור ממייק
+  const webhookUrl = "https://hook.eu2.make.com/2m7seuz16v7d2hz5rkurvek71co4kyxk";
 
   const data = {
     order: cartItems,
@@ -274,20 +284,24 @@
     await fetch(webhookUrl, {
       method: "POST",
       body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json"
+      headers: { "Content-Type": "application/json" }
+    });
+
+    // מחק את כל פריטי ההזמנה מה-localStorage
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith("order-")) {
+        localStorage.removeItem(key);
       }
     });
 
-    localStorage.removeItem("order");
-    window.location.href = "thanks.html"; // או דף תשלום
+    window.location.href = "thanks.html";
   } catch (err) {
     alert("שגיאה בשליחה. נסי שוב.");
     console.error(err);
   }
 }
 
-
+        
         function updateOrderSummary(records) {
             const summaryRows = [];
             let total = 0;
