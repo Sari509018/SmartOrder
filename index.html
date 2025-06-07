@@ -19,7 +19,6 @@
             color: #333;
             position: fixed;
             top: 0;
-            right: 340px;
             width:100%;
             background-color: #f7f7f7;
             z-index: 999;
@@ -86,7 +85,7 @@
 
         .quantity {
             color: #555;
-            font-size: 1.5rem;
+            font-size: 0.95rem;
             margin-bottom: 10px;
         }
 
@@ -339,11 +338,16 @@
                         ${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}
                         <strong>${name}</strong>
                         ${details ? `<p style="margin: 8px 0; color: #666; font-size: 0.95rem;">${details}</p>` : ''}
-                        <div class="quantity">${quantity === 0 ? "אזל מהמלאי" : `נותרו: ${quantity}`}</div>
+                        <div class="quantity" style="color: ${quantity === 0 ? '#d9534f' : 'inherit'}; font-weight: ${quantity === 0 ? '700' : 'normal'};">
+                        ${quantity === 0 ? "אזל מהמלאי" : `נותרו: ${quantity}`}</div>
                         <div class="price">מחיר: ${price} ₪</div>
                         <label>בחר כמות:
                             <input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" />
                         </label>
+                        <label>בחר כמות:<input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" 
+                        ${quantity === 0 ? 'disabled' : ''}/>
+                        </label>
+
                     `;
 
                     div.innerHTML = html;
