@@ -256,7 +256,7 @@
 
 
         async function goToPayment() {
-  const cartItems = JSON.parse(localStorage.getItem("order") || "[]");
+  const cartItems = JSON.parse(localStorage.getItem("order-list") || "[]");
 
   if (cartItems.length === 0) {
     alert("הסל ריק");
