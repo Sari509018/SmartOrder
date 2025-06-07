@@ -223,7 +223,7 @@
 
         <div id="order-section">
             <div id="summary">
-                <h3>סיכום הזמנה</h3>
+                <h3>סל קניות</h3>
                 <table id="order-table">
                     <thead>
                         <tr>
@@ -263,7 +263,7 @@
         function updateOrderSummary(records) {
             const summaryRows = [];
             let total = 0;
-
+        
             records.forEach(record => {
                 const code = record.fields["קוד מוצר"];
                 const name = record.fields["שם מוצר"];
@@ -271,20 +271,52 @@
                 const price = Number(record.fields["מחיר"]) || 0;
                 const img = record.fields["תמונה"];
                 const imageUrl = img && img.length > 0 ? img[0].url : "";
-
+        
                 if (quantity > 0) {
                     const itemTotal = quantity * price;
                     summaryRows.push(`
                         <tr>
                             <td>${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}</td>
                             <td>${name}</td>
-                            <td>${quantity}</td>
+                            <td>
+                                <input type="number" 
+                                       min="0" 
+                                       max="${record.fields["כמות במלאי"] || 0}" 
+                                       value="${quantity}" 
+                                       data-code="${code}" 
+                                       class="order-quantity-input"
+                                       style="width: 60px; text-align: center;"/>
+                            </td>
                             <td>${itemTotal} ₪</td>
                         </tr>
                     `);
                     total += itemTotal;
                 }
             });
+        
+            const orderList = document.getElementById("order-list");
+            const totalDisplay = document.getElementById("total");
+            const payBtn = document.getElementById("pay-btn");
+        
+            orderList.innerHTML = summaryRows.length > 0 ? summaryRows.join("") : `<tr><td colspan="4">הסל ריק</td></tr>`;
+            totalDisplay.textContent = summaryRows.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
+        
+            payBtn.style.display = summaryRows.length > 0 ? "block" : "none";
+        
+            // הוסף מאזין לשינוי בכמויות בתוך סל הקניות:
+            document.querySelectorAll(".order-quantity-input").forEach(input => {
+                input.addEventListener("change", e => {
+                    let val = parseInt(e.target.value);
+                    const max = parseInt(e.target.getAttribute("max"));
+                    const code = e.target.getAttribute("data-code");
+                    if (isNaN(val) || val < 0) val = 0;
+                    if (val > max) val = max;
+                    e.target.value = val;
+                    localStorage.setItem(`order-${code}`, val);
+                    updateOrderSummary(records);
+                });
+            });
+        }
 
             const orderList = document.getElementById("order-list");
             const totalDisplay = document.getElementById("total");
