@@ -17,6 +17,7 @@
             text-align: center;
             margin-bottom: 20px;
             color: #333;
+            position: fixed;
             top: 0;
             right: 340px;
             background-color: #f7f7f7;
@@ -336,7 +337,7 @@
                         ${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}
                         <strong>${name}</strong>
                         ${details ? `<p style="margin: 8px 0; color: #666; font-size: 0.95rem;">${details}</p>` : ''}
-                        <div class="quantity">${quantity === 0 ? <strong>"אזל מהמלאי"</strong> : `נותרו: ${quantity}`}</div>
+                        <div class="quantity">${quantity === 0 ? "אזל מהמלאי" : `נותרו: ${quantity}`}</div>
                         <div class="price">מחיר: ${price} ₪</div>
                         <label>בחר כמות:
                             <input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" />
