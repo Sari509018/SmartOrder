@@ -17,12 +17,20 @@
             text-align: center;
             margin-bottom: 20px;
             color: #333;
+            position: fixed;
+            top: 0;
+            right: 340px;
+            background-color: #f7f7f7;
+            z-index: 999;
+            padding: 10px 20px;
         }
 
         .main-content {
             display: flex;
             gap: 20px;
             align-items: flex-start;
+            margin-top: 80px;
+            margin-right: 340px;
         }
 
         #products {
@@ -108,13 +116,12 @@
             background-color: #c9302c;
         }
 
-        /* כאן השינוי: הסל קניות תמיד נראה, בצד ימין, לגובה מלא */
         #order-section {
             flex: 1;
             position: fixed;
             top: 20px;
             right: 20px;
-            height: calc(100vh - 40px); /* גובה המסך פחות הפדינג */
+            height: calc(100vh - 40px);
             overflow-y: auto;
             background-color: white;
             border-radius: 12px;
@@ -127,26 +134,29 @@
             z-index: 1000;
         }
 
-        #summary {
-            /* יישור תצוגה למעלה */
-        }
-
         #summary h3 {
             margin-top: 0;
             color: #333;
         }
 
-        #summary ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 10px 0;
-            max-height: 60vh;
-            overflow-y: auto;
+        #summary table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
         }
 
-        #summary li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+        #summary th, #summary td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+        }
+
+        #summary img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
         }
 
         #total {
@@ -157,7 +167,7 @@
         }
 
         #pay-btn {
-            display: none; /* יופיע רק כשיש פריטים */
+            display: none;
             width: 100%;
             margin-top: 20px;
             padding: 10px;
@@ -180,6 +190,12 @@
 
             .main-content {
                 flex-direction: column;
+                margin-right: 0;
+            }
+
+            h2 {
+                position: static;
+                text-align: center;
             }
 
             #order-section {
@@ -207,7 +223,17 @@
         <div id="order-section">
             <div id="summary">
                 <h3>סיכום הזמנה</h3>
-                <ul id="order-list"></ul>
+                <table id="order-table">
+                    <thead>
+                        <tr>
+                            <th>תמונה</th>
+                            <th>מוצר</th>
+                            <th>כמות</th>
+                            <th>סה"כ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="order-list"></tbody>
+                </table>
                 <div id="total"></div>
                 <button id="pay-btn" onclick="goToPayment()">לתשלום</button>
             </div>
@@ -230,12 +256,11 @@
         }
 
         function goToPayment() {
-            // שימי כאן את הקישור לתשלום
             window.location.href = "https://example.com/payment";
         }
 
         function updateOrderSummary(records) {
-            const summaryItems = [];
+            const summaryRows = [];
             let total = 0;
 
             records.forEach(record => {
@@ -243,10 +268,19 @@
                 const name = record.fields["שם מוצר"];
                 const quantity = Number(localStorage.getItem(`order-${code}`)) || 0;
                 const price = Number(record.fields["מחיר"]) || 0;
+                const img = record.fields["תמונה"];
+                const imageUrl = img && img.length > 0 ? img[0].url : "";
 
                 if (quantity > 0) {
                     const itemTotal = quantity * price;
-                    summaryItems.push(`<li>${name} — כמות: ${quantity}, מחיר ליחידה: ${price} ₪, סה"כ: ${itemTotal} ₪</li>`);
+                    summaryRows.push(`
+                        <tr>
+                            <td>${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}</td>
+                            <td>${name}</td>
+                            <td>${quantity}</td>
+                            <td>${itemTotal} ₪</td>
+                        </tr>
+                    `);
                     total += itemTotal;
                 }
             });
@@ -255,11 +289,10 @@
             const totalDisplay = document.getElementById("total");
             const payBtn = document.getElementById("pay-btn");
 
-            orderList.innerHTML = summaryItems.length > 0 ? summaryItems.join("") : "<li>הסל ריק</li>";
-            totalDisplay.textContent = summaryItems.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
+            orderList.innerHTML = summaryRows.length > 0 ? summaryRows.join("") : `<tr><td colspan="4">הסל ריק</td></tr>`;
+            totalDisplay.textContent = summaryRows.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
 
-            // הצגת כפתור תשלום רק אם יש פריטים
-            payBtn.style.display = summaryItems.length > 0 ? "block" : "none";
+            payBtn.style.display = summaryRows.length > 0 ? "block" : "none";
         }
 
         fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?sort[0][field]=קוד מוצר&sort[0][direction]=asc`, {
@@ -319,7 +352,6 @@
                 container.appendChild(categoryDiv);
             });
 
-            // מאזין לשינוי בכמויות
             container.querySelectorAll("input[type=number]").forEach(input => {
                 input.addEventListener("change", e => {
                     let val = parseInt(e.target.value);
