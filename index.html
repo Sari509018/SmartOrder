@@ -237,7 +237,6 @@
                 <div id="total"></div>
                 <button id="pay-btn" onclick="goToPayment()">לתשלום</button>
             </div>
-<!--             <button class="clear-btn" onclick="clearOrder()">נקה הזמנה</button> -->
         </div>
     </div>
 
@@ -255,9 +254,39 @@
             location.reload();
         }
 
-        function goToPayment() {
-            window.location.href = "https://example.com/payment";
-        }
+
+        async function goToPayment() {
+  const cartItems = JSON.parse(localStorage.getItem("order") || "[]");
+
+  if (cartItems.length === 0) {
+    alert("הסל ריק");
+    return;
+  }
+
+  const webhookUrl = "https://hook.eu2.make.com/2m7seuz16v7d2hz5rkurvek71co4kyxk"; // ← לכאן תדביקי את הקישור ממייק
+
+  const data = {
+    order: cartItems,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await fetch(webhookUrl, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    localStorage.removeItem("order");
+    window.location.href = "thanks.html"; // או דף תשלום
+  } catch (err) {
+    alert("שגיאה בשליחה. נסי שוב.");
+    console.error(err);
+  }
+}
+
 
         function updateOrderSummary(records) {
             const summaryRows = [];
