@@ -14,23 +14,22 @@
         }
 
         h2 {
-            position: sticky;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            position: fixed;
             top: 0;
-            right: 20px;
+            right: 340px;
             background-color: #f7f7f7;
-            padding: 10px 20px;
             z-index: 999;
-            text-align: right;
-            max-width: 300px;
-            margin: 0 auto 20px auto;
-            border-bottom: 1px solid #ccc;
+            padding: 10px 20px;
         }
 
         .main-content {
             display: flex;
             gap: 20px;
             align-items: flex-start;
-            margin-top: 20px;
+            margin-top: 80px;
             margin-right: 340px;
         }
 
@@ -88,12 +87,6 @@
             color: #555;
             font-size: 0.95rem;
             margin-bottom: 10px;
-        }
-
-        .quantity.out-of-stock {
-            color: #d9534f;
-            font-weight: bold;
-            font-size: 1rem;
         }
 
         input[type=number] {
@@ -201,14 +194,8 @@
             }
 
             h2 {
-                position: sticky;
-                right: 0;
-                top: 0;
-                width: 100%;
-                max-width: none;
-                padding: 10px 10px;
+                position: static;
                 text-align: center;
-                border-bottom: 1px solid #ccc;
             }
 
             #order-section {
@@ -313,75 +300,72 @@
         })
         .then(res => res.json())
         .then(data => {
-            const records = data.records;
-            const productsDiv = document.getElementById("products");
+            const container = document.getElementById("products");
+            container.innerHTML = "";
 
-            // Group by category
-            const categories = {};
-            records.forEach(record => {
-                const cat = record.fields["קטגוריה"] || "אחר";
-                if (!categories[cat]) categories[cat] = [];
-                categories[cat].push(record);
+            const groups = {};
+            data.records.forEach(record => {
+                const category = record.fields["מחלקה"] || "שונות";
+                if (!groups[category]) groups[category] = [];
+                groups[category].push(record);
             });
 
-            let html = "";
-            for (const category in categories) {
-                html += `<div class="category"><h3>${category}</h3><div class="products-grid">`;
+            Object.keys(groups).forEach(category => {
+                const categoryDiv = document.createElement("div");
+                categoryDiv.className = "category";
+                const title = document.createElement("h3");
+                title.textContent = category;
+                categoryDiv.appendChild(title);
 
-                categories[category].forEach(record => {
+                const grid = document.createElement("div");
+                grid.className = "products-grid";
+
+                groups[category].forEach(record => {
                     const name = record.fields["שם מוצר"];
-                    const quantity = Number(record.fields["כמות"]) || 0;
                     const code = record.fields["קוד מוצר"];
+                    const details = record.fields["תיאור מוצר"] || "";
+                    const quantity = record.fields["כמות במלאי"] || 0;
+                    const price = record.fields["מחיר"] || 0;
                     const img = record.fields["תמונה"];
-                    const imageUrl = img && img.length > 0 ? img[0].url : "";
-                    const isOutOfStock = quantity === 0;
+                    const imageUrl = img && img.length > 0 ? img[0].url : null;
+                    const savedQuantity = localStorage.getItem(`order-${code}`) || "0";
 
-                    html += `
-                        <div class="product">
-                            <img src="${imageUrl}" alt="${name}" />
-                            <strong>${name}</strong>
-                            <div class="quantity${isOutOfStock ? ' out-of-stock' : ''}">
-                                ${isOutOfStock ? "אזל מהמלאי" : `כמות במלאי: ${quantity}`}
-                            </div>
-                            <input 
-                                type="number" 
-                                min="0" 
-                                max="${quantity}" 
-                                step="1" 
-                                value="${localStorage.getItem(`order-${code}`) || 0}" 
-                                ${isOutOfStock ? 'disabled' : ''}
-                                onchange="updateOrder('${code}', this.value, ${quantity})"
-                                aria-label="בחר כמות של ${name}"
-                            />
-                        </div>
+                    const div = document.createElement("div");
+                    div.className = "product";
+
+                    let html = `
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}
+                        <strong>${name}</strong>
+                        ${details ? `<p style="margin: 8px 0; color: #666; font-size: 0.95rem;">${details}</p>` : ''}
+                        <div class="quantity">${quantity === 0 ? "אזל מהמלאי" : `נותרו: ${quantity}`}</div>
+                        <div class="price">מחיר: ${price} ₪</div>
+                        <label>בחר כמות:
+                            <input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" />
+                        </label>
                     `;
+
+                    div.innerHTML = html;
+                    grid.appendChild(div);
                 });
 
-                html += `</div></div>`;
-            }
+                categoryDiv.appendChild(grid);
+                container.appendChild(categoryDiv);
+            });
 
-            productsDiv.innerHTML = html;
-            updateOrderSummary(records);
-        })
-        .catch(error => {
-            document.getElementById("products").innerText = "שגיאה בטעינת המוצרים";
-            console.error(error);
+            container.querySelectorAll("input[type=number]").forEach(input => {
+                input.addEventListener("change", e => {
+                    let val = parseInt(e.target.value);
+                    const max = parseInt(e.target.getAttribute("data-max"));
+                    if (isNaN(val) || val < 0) val = 0;
+                    if (val > max) val = max;
+                    e.target.value = val;
+                    localStorage.setItem(`order-${e.target.getAttribute("data-code")}`, val);
+                    updateOrderSummary(data.records);
+                });
+            });
+
+            updateOrderSummary(data.records);
         });
-
-        function updateOrder(code, qty, maxQty) {
-            qty = Number(qty);
-            if (qty < 0) qty = 0;
-            if (qty > maxQty) qty = maxQty;
-            localStorage.setItem(`order-${code}`, qty);
-            // Refresh order summary by fetching products again or cache the products in a variable
-            // For simplicity, refetching from Airtable:
-            fetch(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
-                headers: { Authorization: `Bearer ${apiKey}` }
-            })
-            .then(res => res.json())
-            .then(data => updateOrderSummary(data.records))
-            .catch(console.error);
-        }
     </script>
 </body>
 </html>
