@@ -1,414 +1,122 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
-    <meta charset="UTF-8" />
-    <title>הזמנות</title>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo&display=swap" rel="stylesheet" />
-    <style>
-        body {
-            direction: rtl;
-            font-family: 'Heebo', sans-serif;
-            padding: 20px;
-            background-color: #f7f7f7;
-            margin: 0;
-        }
-
-        #header {
-            text-align: center;
-            margin-bottom: 20px;
-            color: white;
-            position: fixed;
-            top: 0;
-            width:100%;
-            background-color: #6b9462;
-            z-index: 999;
-        }
-
-        .main-content {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            margin-top: 80px;
-            margin-right: 400px;
-        }
-
-        #products {
-            flex: 3;
-        }
-
-        .category {
-            margin-bottom: 40px;
-        }
-
-        .category h3 {
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            color: #444;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .product {
-            background-color: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-
-        .product:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        }
-
-        .product img {
-            max-width: 100%;
-            max-height: 180px;
-            object-fit: contain;
-            border-radius: 10px;
-            margin-bottom: 12px;
-        }
-
-        .product strong {
-            font-size: 1.1rem;
-            color: #222;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .quantity {
-            color: #555;
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-        }
-
-        input[type=number] {
-            font-family: 'Heebo', sans-serif;
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-            width: 100px;
-            text-align: center;
-            direction: ltr;
-        }
-
-        .clear-btn {
-            margin-top: 15px;
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .clear-btn:hover {
-            background-color: #c9302c;
-        }
-
-        #order-section {
-            flex: 1;
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            height: calc(100vh - 40px);
-            overflow-y: auto;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 360px;
-            z-index: 1000;
-        }
-
-        #summary h3 {
-            margin-top: 0;
-            color: #333;
-        }
-
-        #summary table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-
-        #summary th, #summary td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: center;
-        }
-
-        #summary img {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        #total {
-            font-weight: bold;
-            color: #222;
-            font-size: 1.1rem;
-            margin-top: 10px;
-        }
-
-        #pay-btn {
-            display: none;
-            width: 100%;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #6b9462;
-            color: white;
-            font-size: 1.1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        #pay-btn:hover {
-            background-color: #6b9462;
-        }
-
-        @media (max-width: 900px) {
-            .products-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .main-content {
-                flex-direction: column;
-                margin-right: 0;
-            }
-
-            h2 {
-                position: static;
-                text-align: center;
-            }
-
-            #order-section {
-                position: static;
-                width: 100%;
-                height: auto;
-                overflow-y: visible;
-                margin-top: 20px;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>טופס הזמנה</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      margin: 20px;
+    }
+    .hidden { display: none; }
+    .cart-item { margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+    input[type="text"], input[type="email"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+  </style>
 </head>
 <body>
-    <div id="header">
-    <h2>המוצרים שלנו</h2>
-</div>
-    <div class="main-content">
-        <div id="products">טוען...</div>
 
-        <div id="order-section">
-            <div id="summary">
-                <h3>סל קניות</h3>
-                <table id="order-table">
-                    <thead>
-                        <tr>
-                            <th>תמונה</th>
-                            <th>מוצר</th>
-                            <th>כמות</th>
-                            <th>סה"כ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="order-list"></tbody>
-                </table>
-                <div id="total"></div>
-                <button id="pay-btn" onclick="goToPayment()">לתשלום</button>
-            </div>
-        </div>
+  <h2>פרטי משתמש</h2>
+  <div id="user-form">
+    <label>שם פרטי:<br>
+      <input type="text" id="first-name" required>
+    </label><br>
+    <label>שם משפחה:<br>
+      <input type="text" id="last-name" required>
+    </label><br>
+    <label>אימייל:<br>
+      <input type="email" id="email" required>
+    </label><br>
+    <button onclick="saveUser()">המשך</button>
+  </div>
+
+  <div id="main-content" class="hidden">
+    <div id="user-display" style="margin-bottom: 20px;"></div>
+
+    <h2>סל הקניות</h2>
+    <div id="cart"></div>
+    <div id="order-section" style="margin-top: 20px;">
+      <button onclick="goToPayment()">לתשלום</button>
     </div>
+  </div>
 
-    <script>
-        const apiKey = "patcSoyAuN3vPeJWD.7fb6de87db9f8e018466e93d622b1d9b6096de126f8f3f694d3d9ff27f6c98e2";
-        const baseId = "appcvQUUj0l4D3jxs";
-        const tableName = "קטלוג";
+  <script>
+    let cartItems = [
+      { name: "מוצר 1", quantity: 2, price: 20 },
+      { name: "מוצר 2", quantity: 1, price: 50 }
+    ];
 
-        function clearOrder() {
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith("order-")) {
-                    localStorage.removeItem(key);
-                }
-            });
-            location.reload();
-        }
+    let userInfo = {};
 
-        async function goToPayment() {
-  // אסוף את כל פריטים מה-localStorage שמתחילים ב-"order-"
-  const cartItems = [];
+    function saveUser() {
+      const firstName = document.getElementById("first-name").value.trim();
+      const lastName = document.getElementById("last-name").value.trim();
+      const email = document.getElementById("email").value.trim();
 
-  Object.keys(localStorage).forEach(key => {
-    if (key.startsWith("order-")) {
-      const quantity = Number(localStorage.getItem(key));
-      if (quantity > 0) {
-        const code = key.substring(6); // מחזיר את מה אחרי "order-"
-        cartItems.push({ code, quantity });
+      if (!firstName || !lastName || !email) {
+        alert("אנא מלאי את כל השדות");
+        return;
       }
+
+      userInfo = { firstName, lastName, email };
+
+      document.getElementById("user-form").classList.add("hidden");
+      document.getElementById("main-content").classList.remove("hidden");
+
+      document.getElementById("user-display").innerHTML = `
+        <strong>שלום, ${firstName} ${lastName}</strong><br>
+        אימייל: ${email}
+      `;
+
+      showCart();
     }
-  });
 
-  if (cartItems.length === 0) {
-    alert("הסל ריק");
-    return;
-  }
+    function showCart() {
+      const cartDiv = document.getElementById("cart");
+      cartDiv.innerHTML = "";
 
-  const webhookUrl = "https://hook.eu2.make.com/2m7seuz16v7d2hz5rkurvek71co4kyxk";
+      cartItems.forEach(item => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "cart-item";
+        itemDiv.innerHTML = `
+          <strong>${item.name}</strong><br>
+          כמות: ${item.quantity}<br>
+          מחיר: ₪${item.price}
+        `;
+        cartDiv.appendChild(itemDiv);
+      });
+    }
 
-  const data = {
-    order: cartItems,
-    timestamp: new Date().toISOString()
-  };
+    function goToPayment() {
+      const data = {
+        order: cartItems,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        email: userInfo.email,
+        timestamp: new Date().toISOString()
+      };
 
-  try {
-    await fetch(webhookUrl, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
-    });
-
-    // מחק את כל פריטי ההזמנה מה-localStorage
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith("order-")) {
-        localStorage.removeItem(key);
-      }
-    });
-
-  } catch (err) {
-    alert("שגיאה בשליחה. נסי שוב.");
-    console.error(err);
-  }
-}
-
-        
-        function updateOrderSummary(records) {
-            const summaryRows = [];
-            let total = 0;
-
-            records.forEach(record => {
-                const code = record.fields["קוד מוצר"];
-                const name = record.fields["שם מוצר"];
-                const quantity = Number(localStorage.getItem(`order-${code}`)) || 0;
-                const price = Number(record.fields["מחיר"]) || 0;
-                const img = record.fields["תמונה"];
-                const imageUrl = img && img.length > 0 ? img[0].url : "";
-
-                if (quantity > 0) {
-                    const itemTotal = quantity * price;
-                    summaryRows.push(`
-                        <tr>
-                            <td>${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}</td>
-                            <td>${name}</td>
-                            <td>${quantity}</td>
-                            <td>${itemTotal} ₪</td>
-                        </tr>
-                    `);
-                    total += itemTotal;
-                }
-            });
-
-            const orderList = document.getElementById("order-list");
-            const totalDisplay = document.getElementById("total");
-            const payBtn = document.getElementById("pay-btn");
-
-            orderList.innerHTML = summaryRows.length > 0 ? summaryRows.join("") : `<tr><td colspan="4">הסל ריק</td></tr>`;
-            totalDisplay.textContent = summaryRows.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
-
-            payBtn.style.display = summaryRows.length > 0 ? "block" : "none";
+      fetch("https://hook.eu1.make.com/...", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (response.ok) {
+          alert("ההזמנה נשלחה בהצלחה!");
+        } else {
+          alert("אירעה שגיאה בשליחה");
         }
+      })
+      .catch(error => {
+        alert("שגיאת תקשורת: " + error);
+      });
+    }
+  </script>
 
-        fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?sort[0][field]=קוד מוצר&sort[0][direction]=asc`, {
-            headers: { Authorization: `Bearer ${apiKey}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById("products");
-            container.innerHTML = "";
-
-            const groups = {};
-            data.records.forEach(record => {
-                const category = record.fields["מחלקה"] || "שונות";
-                if (!groups[category]) groups[category] = [];
-                groups[category].push(record);
-            });
-
-            Object.keys(groups).forEach(category => {
-                const categoryDiv = document.createElement("div");
-                categoryDiv.className = "category";
-                const title = document.createElement("h3");
-                title.textContent = category;
-                categoryDiv.appendChild(title);
-
-                const grid = document.createElement("div");
-                grid.className = "products-grid";
-
-                groups[category].forEach(record => {
-                    const name = record.fields["שם מוצר"];
-                    const code = record.fields["קוד מוצר"];
-                    const details = record.fields["תיאור מוצר"] || "";
-                    const quantity = record.fields["כמות במלאי"] || 0;
-                    const price = record.fields["מחיר"] || 0;
-                    const img = record.fields["תמונה"];
-                    const imageUrl = img && img.length > 0 ? img[0].url : null;
-                    const savedQuantity = localStorage.getItem(`order-${code}`) || "0";
-
-                    const div = document.createElement("div");
-                    div.className = "product";
-
-                    let html = `
-                        ${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}
-                        <strong>${name}</strong>
-                        ${details ? `<p style="margin: 8px 0; color: #666; font-size: 0.95rem;">${details}</p>` : ''}
-                        <div class="quantity" style="color: ${quantity === 0 ? '#d9534f' : 'inherit'}; font-weight: ${quantity === 0 ? '700' : 'normal'};">
-                        ${quantity === 0 ? "אזל מהמלאי" : `נותרו: ${quantity}`}</div>
-                        <div class="price">מחיר: ${price} ₪</div>
-                        <label>בחר כמות:
-                            <input type="number" min="0" max="${quantity}" value="${savedQuantity}" id="qty-${code}" data-code="${code}" data-max="${quantity}" 
-                        ${quantity === 0 ? 'disabled' : ''}/></label>
-                    `;
-
-                    div.innerHTML = html;
-                    grid.appendChild(div);
-                });
-
-                categoryDiv.appendChild(grid);
-                container.appendChild(categoryDiv);
-            });
-
-            container.querySelectorAll("input[type=number]").forEach(input => {
-                input.addEventListener("change", e => {
-                    let val = parseInt(e.target.value);
-                    const max = parseInt(e.target.getAttribute("data-max"));
-                    if (isNaN(val) || val < 0) val = 0;
-                    if (val > max) val = max;
-                    e.target.value = val;
-                    localStorage.setItem(`order-${e.target.getAttribute("data-code")}`, val);
-                    updateOrderSummary(data.records);
-                });
-            });
-
-            updateOrderSummary(data.records);
-        });
-    </script>
 </body>
 </html>
