@@ -202,7 +202,7 @@
 <body>
         <div id="header">
             <h2>המוצרים שלנו</h2>
-            <div id="welcome" style="font-size: 1.1rem; margin-bottom: 10px;"></div>
+            <div id="welcome" style="font-size: 1.1rem; margin-bottom: 10px; position: absolute; left: 20px; top: 10px;"></div>
         </div>
 
         <div class="main-content">
@@ -239,15 +239,14 @@
             }
 
             const userInfo = {
-                first_name: getQueryParam('first_name'),
-                last_name: getQueryParam('last_name'),
+                name: getQueryParam('name'),
                 email: getQueryParam('email'),
             };
 
             const userName = getQueryParam('name');
             if (userName) {
                 const welcomeDiv = document.getElementById("welcome");
-                welcomeDiv.textContent = `מחובר/ת ${userName}`;
+                welcomeDiv.textContent = `${userName} מחובר/ת`;
             }
 
             async function goToPayment() {
@@ -320,7 +319,7 @@
                             <td>${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}</td>
                             <td>${name}</td>
                             <td>${quantity}</td>
-                            <td>${itemTotal} ₪</td>
+                            <td>${itemTotal.toFixed(2)} ₪</td>
                         </tr>
                     `);
                         total += itemTotal;
@@ -332,7 +331,7 @@
                 const payBtn = document.getElementById("pay-btn");
 
                 orderList.innerHTML = summaryRows.length > 0 ? summaryRows.join("") : `<tr><td colspan="4">הסל ריק</td></tr>`;
-                totalDisplay.textContent = summaryRows.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
+                totalDisplay.textContent = summaryRows.length > 0 ? `סה"כ לתשלום: ${total.toFixed(2)} ₪` : "";
 
                 payBtn.style.display = summaryRows.length > 0 ? "block" : "none";
             }
