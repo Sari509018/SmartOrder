@@ -200,114 +200,122 @@
 </head>
 
 <body>
-    <div id="header">
-        <h2>המוצרים שלנו</h2>
-    </div>
-    <div class="main-content">
-        <div id="products">טוען...</div>
+        <div id="header">
+            <h2>המוצרים שלנו</h2>
+            <div id="welcome" style="font-size: 1.1rem; margin-bottom: 10px;"></div>
+        </div>
 
-        <div id="order-section">
-            <div id="summary">
-                <h3>סל קניות</h3>
-                <table id="order-table">
-                    <thead>
-                        <tr>
-                            <th>תמונה</th>
-                            <th>מוצר</th>
-                            <th>כמות</th>
-                            <th>סה"כ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="order-list"></tbody>
-                </table>
-                <div id="total"></div>
-                <button id="pay-btn" onclick="goToPayment()">לתשלום</button>
+        <div class="main-content">
+            <div id="products">טוען...</div>
+
+            <div id="order-section">
+                <div id="summary">
+                    <h3>סל קניות</h3>
+                    <table id="order-table">
+                        <thead>
+                            <tr>
+                                <th>תמונה</th>
+                                <th>מוצר</th>
+                                <th>כמות</th>
+                                <th>סה"כ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-list"></tbody>
+                    </table>
+                    <div id="total"></div>
+                    <button id="pay-btn" onclick="goToPayment()">לתשלום</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        const apiKey = "patcSoyAuN3vPeJWD.7fb6de87db9f8e018466e93d622b1d9b6096de126f8f3f694d3d9ff27f6c98e2";
-        const baseId = "appcvQUUj0l4D3jxs";
-        const tableName = "קטלוג";
+        <script>
+            const apiKey = "patcSoyAuN3vPeJWD.7fb6de87db9f8e018466e93d622b1d9b6096de126f8f3f694d3d9ff27f6c98e2";
+            const baseId = "appcvQUUj0l4D3jxs";
+            const tableName = "קטלוג";
 
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param) || '';
-        }
-
-        const userInfo = {
-            first_name: getQueryParam('first_name'),
-            last_name: getQueryParam('last_name'),
-            email: getQueryParam('email'),
-        };
-
-        async function goToPayment() {
-            const cartItems = [];
-
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith("order-")) {
-                    const quantity = Number(localStorage.getItem(key));
-                    if (quantity > 0) {
-                        const code = key.substring(6);
-                        cartItems.push({ code, quantity });
-                    }
-                }
-            });
-
-            if (cartItems.length === 0) {
-                alert("הסל ריק");
-                return;
+            function getQueryParam(param) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(param) || '';
             }
 
-            const webhookUrl = "https://hook.eu2.make.com/2m7seuz16v7d2hz5rkurvek71co4kyxk";
-
             const userInfo = {
-                name: getQueryParam('name'),
-                email: getQueryParam('email')
+                first_name: getQueryParam('first_name'),
+                last_name: getQueryParam('last_name'),
+                email: getQueryParam('email'),
             };
 
-            const data = {
-                order: cartItems,
-                customer: userInfo,
-                timestamp: new Date().toISOString()
-            };
+            const userName = getQueryParam('name');
+            if (userName) {
+                const welcomeDiv = document.getElementById("welcome");
+                welcomeDiv.textContent = `שלום ${userName} 👋`;
+            }
 
-            try {
-                await fetch(webhookUrl, {
-                    method: "POST",
-                    body: JSON.stringify(data),
-                    headers: { "Content-Type": "application/json" }
-                });
+            async function goToPayment() {
+                const cartItems = [];
 
                 Object.keys(localStorage).forEach(key => {
                     if (key.startsWith("order-")) {
-                        localStorage.removeItem(key);
+                        const quantity = Number(localStorage.getItem(key));
+                        if (quantity > 0) {
+                            const code = key.substring(6);
+                            cartItems.push({ code, quantity });
+                        }
                     }
                 });
 
-            } catch (err) {
-                alert("שגיאה בשליחה. נסי שוב.");
-                console.error(err);
+                if (cartItems.length === 0) {
+                    alert("הסל ריק");
+                    return;
+                }
+
+                const webhookUrl = "https://hook.eu2.make.com/2m7seuz16v7d2hz5rkurvek71co4kyxk";
+
+                const userInfo = {
+                    name: getQueryParam('name'),
+                    email: getQueryParam('email')
+                };
+
+                const data = {
+                    order: cartItems,
+                    customer: userInfo,
+                    timestamp: new Date().toISOString()
+                };
+
+                try {
+                    await fetch(webhookUrl, {
+                        method: "POST",
+                        body: JSON.stringify(data),
+                        headers: { "Content-Type": "application/json" }
+                    });
+
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith("order-")) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+
+                } catch (err) {
+                    alert("שגיאה בשליחה. נסי שוב.");
+                    console.error(err);
+                }
             }
-        }
 
 
-        function updateOrderSummary(records) {
-            const summaryRows = [];
-            let total = 0;
+            function updateOrderSummary(records) {
+                const summaryRows = [];
+                let total = 0;
 
-            records.forEach(record => {
-                const code = record.fields["קוד מוצר"];
-                const name = record.fields["שם מוצר"];
-                const quantity = Number(localStorage.getItem(`order-${code}`)) || 0;
-                const price = Number(record.fields["מחיר"]) || 0;
-                const img = record.fields["תמונה"];
-                const imageUrl = img && img.length > 0 ? img[0].url : "";
+                records.forEach(record => {
+                    const code = record.fields["קוד מוצר"];
+                    const name = record.fields["שם מוצר"];
+                    const quantity = Number(localStorage.getItem(`order-${code}`)) || 0;
+                    const price = Number(record.fields["מחיר"]) || 0;
+                    const img = record.fields["תמונה"];
+                    const imageUrl = img && img.length > 0 ? img[0].url : "";
 
-                if (quantity > 0) {
-                    const itemTotal = quantity * price;
-                    summaryRows.push(`
+                    if (quantity > 0) {
+                        const itemTotal = quantity * price;
+                        summaryRows.push(`
                         <tr>
                             <td>${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}</td>
                             <td>${name}</td>
@@ -315,59 +323,59 @@
                             <td>${itemTotal} ₪</td>
                         </tr>
                     `);
-                    total += itemTotal;
-                }
-            });
-
-            const orderList = document.getElementById("order-list");
-            const totalDisplay = document.getElementById("total");
-            const payBtn = document.getElementById("pay-btn");
-
-            orderList.innerHTML = summaryRows.length > 0 ? summaryRows.join("") : `<tr><td colspan="4">הסל ריק</td></tr>`;
-            totalDisplay.textContent = summaryRows.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
-
-            payBtn.style.display = summaryRows.length > 0 ? "block" : "none";
-        }
-
-        fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?sort[0][field]=קוד מוצר&sort[0][direction]=asc`, {
-            headers: { Authorization: `Bearer ${apiKey}` }
-        })
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById("products");
-                container.innerHTML = "";
-
-                const groups = {};
-                data.records.forEach(record => {
-                    const category = record.fields["מחלקה"] || "שונות";
-                    if (!groups[category]) groups[category] = [];
-                    groups[category].push(record);
+                        total += itemTotal;
+                    }
                 });
 
-                Object.keys(groups).forEach(category => {
-                    const categoryDiv = document.createElement("div");
-                    categoryDiv.className = "category";
-                    const title = document.createElement("h3");
-                    title.textContent = category;
-                    categoryDiv.appendChild(title);
+                const orderList = document.getElementById("order-list");
+                const totalDisplay = document.getElementById("total");
+                const payBtn = document.getElementById("pay-btn");
 
-                    const grid = document.createElement("div");
-                    grid.className = "products-grid";
+                orderList.innerHTML = summaryRows.length > 0 ? summaryRows.join("") : `<tr><td colspan="4">הסל ריק</td></tr>`;
+                totalDisplay.textContent = summaryRows.length > 0 ? `סה"כ לתשלום: ${total} ₪` : "";
 
-                    groups[category].forEach(record => {
-                        const name = record.fields["שם מוצר"];
-                        const code = record.fields["קוד מוצר"];
-                        const details = record.fields["תיאור מוצר"] || "";
-                        const quantity = record.fields["כמות במלאי"] || 0;
-                        const price = record.fields["מחיר"] || 0;
-                        const img = record.fields["תמונה"];
-                        const imageUrl = img && img.length > 0 ? img[0].url : null;
-                        const savedQuantity = localStorage.getItem(`order-${code}`) || "0";
+                payBtn.style.display = summaryRows.length > 0 ? "block" : "none";
+            }
 
-                        const div = document.createElement("div");
-                        div.className = "product";
+            fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?sort[0][field]=קוד מוצר&sort[0][direction]=asc`, {
+                headers: { Authorization: `Bearer ${apiKey}` }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById("products");
+                    container.innerHTML = "";
 
-                        let html = `
+                    const groups = {};
+                    data.records.forEach(record => {
+                        const category = record.fields["מחלקה"] || "שונות";
+                        if (!groups[category]) groups[category] = [];
+                        groups[category].push(record);
+                    });
+
+                    Object.keys(groups).forEach(category => {
+                        const categoryDiv = document.createElement("div");
+                        categoryDiv.className = "category";
+                        const title = document.createElement("h3");
+                        title.textContent = category;
+                        categoryDiv.appendChild(title);
+
+                        const grid = document.createElement("div");
+                        grid.className = "products-grid";
+
+                        groups[category].forEach(record => {
+                            const name = record.fields["שם מוצר"];
+                            const code = record.fields["קוד מוצר"];
+                            const details = record.fields["תיאור מוצר"] || "";
+                            const quantity = record.fields["כמות במלאי"] || 0;
+                            const price = record.fields["מחיר"] || 0;
+                            const img = record.fields["תמונה"];
+                            const imageUrl = img && img.length > 0 ? img[0].url : null;
+                            const savedQuantity = localStorage.getItem(`order-${code}`) || "0";
+
+                            const div = document.createElement("div");
+                            div.className = "product";
+
+                            let html = `
                         ${imageUrl ? `<img src="${imageUrl}" alt="${name}">` : ''}
                         <strong>${name}</strong>
                         ${details ? `<p style="margin: 8px 0; color: #666; font-size: 0.95rem;">${details}</p>` : ''}
@@ -379,29 +387,29 @@
                         ${quantity === 0 ? 'disabled' : ''}/></label>
                     `;
 
-                        div.innerHTML = html;
-                        grid.appendChild(div);
+                            div.innerHTML = html;
+                            grid.appendChild(div);
+                        });
+
+                        categoryDiv.appendChild(grid);
+                        container.appendChild(categoryDiv);
                     });
 
-                    categoryDiv.appendChild(grid);
-                    container.appendChild(categoryDiv);
-                });
-
-                container.querySelectorAll("input[type=number]").forEach(input => {
-                    input.addEventListener("change", e => {
-                        let val = parseInt(e.target.value);
-                        const max = parseInt(e.target.getAttribute("data-max"));
-                        if (isNaN(val) || val < 0) val = 0;
-                        if (val > max) val = max;
-                        e.target.value = val;
-                        localStorage.setItem(`order-${e.target.getAttribute("data-code")}`, val);
-                        updateOrderSummary(data.records);
+                    container.querySelectorAll("input[type=number]").forEach(input => {
+                        input.addEventListener("change", e => {
+                            let val = parseInt(e.target.value);
+                            const max = parseInt(e.target.getAttribute("data-max"));
+                            if (isNaN(val) || val < 0) val = 0;
+                            if (val > max) val = max;
+                            e.target.value = val;
+                            localStorage.setItem(`order-${e.target.getAttribute("data-code")}`, val);
+                            updateOrderSummary(data.records);
+                        });
                     });
-                });
 
-                updateOrderSummary(data.records);
-            });
-    </script>
+                    updateOrderSummary(data.records);
+                });
+        </script>
 </body>
 
 </html>
